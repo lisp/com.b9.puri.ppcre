@@ -12,8 +12,10 @@
   :maintainer "Kevin M. Rosenberg <kmr@debian.org>"
   :licence "GNU Lesser General Public License"
   :description "Portable Universal Resource Indentifier Library"
+  :serial t
   :components
-  ((:file "src")))
+  ((:file "src")
+   (:file "puri-clppcre")))
 
 (defmethod perform ((o test-op) (c (eql (find-system 'puri))))
   (oos 'load-op 'puri-tests)

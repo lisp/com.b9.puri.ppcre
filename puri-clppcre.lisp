@@ -38,8 +38,9 @@
 ;;    the given package, that class is used for instantiation.
 ;;  parse-uri-string (string)
 ;;    This version uses cl-ppcre based on the regular expression from rfc3986.
-;;    (see *uri-pattern-string*) Returns values scheme, host, port, path,
-;;    query, fragment, and userinfo.
+;;    (see *uri-pattern-string*) It separates the compnent validation from the
+;;    parsing. Returns values scheme, host, port, path, query, fragment, and
+;;    userinfo.
 ;;  uri-userinfo, uri-user, uri-password (uri)
 ;;    The operators are defined to manipulate the instance's property list.
 ;;    NB. The userinfo value does not appear in the printed representation.

@@ -196,9 +196,12 @@
                       :test 'string=)
      res)
     (push
+     #+(or) ;; rfc3986 syntax excludes this
      `(test "foo%23bar#foobar#baz"
                       (format nil "~a" (parse-uri "foo%23bar#foobar#baz"))
                       :test 'string=)
+     `(test-error (format nil "~a" (parse-uri "foo%23bar#foobar#baz"))
+                  :condition-type 'uri-parse-error)
      res)
     (push
      `(test "foo%23bar#foobar#baz"
@@ -210,12 +213,16 @@
                       (format nil "~a" (parse-uri "foo%23bar#foobar%2fbaz"))
                       :test 'string=)
      res)
-    (push `(test-error (parse-uri "foobar??")
-                                 :condition-type 'uri-parse-error)
-          res)
-    (push `(test-error (parse-uri "foobar?foo?")
-                                 :condition-type 'uri-parse-error)
-          res)
+    (push
+     #+(or) ;; rfc3986 permits this
+     `(test-error (parse-uri "foobar??") :condition-type 'uri-parse-error)
+     `(test "foobar??" (format nil "~a" (parse-uri "foobar??")) :test 'string=)
+     res)
+    (push
+     #+(or) ;; rfc3986 syntax permits this
+     `(test-error (parse-uri "foobar?foo?") :condition-type 'uri-parse-error)
+     `(test "foobar?foo?" (format nil "~a" (parse-uri "foobar?foo?")) :test 'string=)
+     res)
     (push `(test "foobar?%3f"
                            (format nil "~a" (parse-uri "foobar?%3f"))
                            :test 'string=)
@@ -371,10 +378,12 @@
           res)
 
     (push
+     #+(or) ;; rfc3986 syntax precludes this
      '(let ((puri::*strict-parse* nil))
        (test-no-error
         (puri:parse-uri
          "http://foo.com/bar?a=zip|zop")))
+     `(test-error (parse-uri "http://foo.com/bar?a=zip|zop") :condition-type 'uri-parse-error)
      res)
     (push
      '(test-error
@@ -389,10 +398,17 @@
          "http://arc3.msn.com/ADSAdClient31.dll?GetAd?PG=NBCSBU?SC=D2?AN=1.0586041")))
      res)
     (push
+     #+() ; rfc3986 permits the '?' in th query
      '(test-error
        (puri:parse-uri
         "http://arc3.msn.com/ADSAdClient31.dll?GetAd?PG=NBCSBU?SC=D2?AN=1.0586041")
        :condition-type 'uri-parse-error)
+     '(test
+        "http://arc3.msn.com/ADSAdClient31.dll?GetAd?PG=NBCSBU?SC=D2?AN=1.0586041"
+         (format nil "~a"
+                 (puri:parse-uri
+                  "http://arc3.msn.com/ADSAdClient31.dll?GetAd?PG=NBCSBU?SC=D2?AN=1.0586041"))
+        :test 'string=)
      res)
 
     (push
