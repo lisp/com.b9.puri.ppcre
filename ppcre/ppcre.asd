@@ -9,6 +9,7 @@
   :maintainer "james.anderson@setf.de"
   :licence "GNU Lesser General Public License"
   :description "additions to Portable Universal Resource Indentifier Library"
-  :depends-on (:com.b9.puri)
+  :depends-on (:de.weitz.cl-ppcre
+               :com.b9.puri)
   :components
   ((:file "puri-ppcre")))
