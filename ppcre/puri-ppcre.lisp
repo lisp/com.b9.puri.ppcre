@@ -273,7 +273,11 @@
                                        (subdelim-p c)
                                        (eql c #\:)
                                        (pct-encoded-p s i c)))))
-               (host (s) s)
+               (host (s)
+                 ;; coerce "" to nil.
+                 ;; the original, this signals an error, but the regular expression permits it,
+                 ;; as does appendix a
+                 (when (plusp (length s)) s))
                (port (s)
                  (when (plusp (length s))
                    (if (every #'digit-char-p s)

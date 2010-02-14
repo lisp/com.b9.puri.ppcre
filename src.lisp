@@ -936,19 +936,21 @@ URI ~s contains illegal character ~s at position ~d."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; merging and unmerging
 
-(defmethod merge-uris ((uri string) (base string) &optional place)
-  (merge-uris (parse-uri uri) (parse-uri base) place))
+(defmethod merge-uris ((uri string) (base string) &optional place (strict-p t))
+  (merge-uris (parse-uri uri) (parse-uri base) place strict-p))
 
-(defmethod merge-uris ((uri uri) (base string) &optional place)
-  (merge-uris uri (parse-uri base) place))
+(defmethod merge-uris ((uri uri) (base string) &optional place (strict-p t))
+  (merge-uris uri (parse-uri base) place strict-p))
 
-(defmethod merge-uris ((uri string) (base uri) &optional place)
-  (merge-uris (parse-uri uri) base place))
+(defmethod merge-uris ((uri string) (base uri) &optional place (strict-p t))
+  (merge-uris (parse-uri uri) base place strict-p))
 
 
-(defmethod merge-uris ((uri uri) (base uri) &optional place)
+(defmethod merge-uris ((uri uri) (base uri) &optional place (strict-p t))
   ;; See ../doc/rfc2396.txt for info on the algorithm we use to merge
   ;; URIs.
+  ;; RFC3986 introduced the option, that a "non-strict" process would
+  ;; treat identical schemes as if the reference uri had none
   ;;
   (tagbody
 ;;;; step 2
@@ -968,9 +970,11 @@ URI ~s contains illegal character ~s at position ~d."
     (setq uri (copy-uri uri :place place))
 
 ;;;; step 3
-    (when (uri-scheme uri)
-      (return-from merge-uris uri))
-    (setf (uri-scheme uri) (uri-scheme base))
+    (if (and (uri-scheme uri)
+             strict-p)
+      (unless (string-equal (uri-scheme uri) (uri-scheme base))
+        (return-from merge-uris uri))
+      (setf (uri-scheme uri) (uri-scheme base)))
 
 ;;;; step 4
     (when (uri-host uri) (go :done))
