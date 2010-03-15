@@ -10,6 +10,7 @@
   :licence "GNU Lesser General Public License"
   :description "additions to Portable Universal Resource Indentifier Library"
   :depends-on (:de.weitz.cl-ppcre
-               :com.b9.puri)
+               :com.b9.puri
+               :de.setf.utility)
   :components
   ((:file "puri-ppcre")))

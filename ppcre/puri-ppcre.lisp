@@ -53,7 +53,7 @@
 ;; patch parse-uri to allow class to be designated by the scheme
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(uri-user uri-password) :puri))
+  (export '(uri-user uri-password uri-userinfo) :puri))
 
 (fmakunbound 'parse-uri)
 (fmakunbound 'parse-uri-string)
@@ -68,7 +68,6 @@
 ;;;
 ;;; replace the constructor
 
-#+de.setf.utility
 (progn
   (fmakunbound 'uri)
   (fmakunbound 'uri-p)
