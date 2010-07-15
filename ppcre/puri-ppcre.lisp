@@ -53,7 +53,7 @@
 ;; patch parse-uri to allow class to be designated by the scheme
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(uri-user uri-password uri-userinfo) :puri))
+  (export '(uri-user uri-password uri-userinfo *class.uri* make-uri) :puri))
 
 (fmakunbound 'parse-uri)
 (fmakunbound 'parse-uri-string)
@@ -66,15 +66,43 @@
     (:telnet . 23)))
 
 ;;;
-;;; replace the constructor
+;;; replace the constructor and predicate with generic operators
 
-(progn
-  (fmakunbound 'uri)
-  (fmakunbound 'uri-p)
-  (de.setf.utility:def-class-constructor uri
-    (:method ((thing string) &key &allow-other-keys)
-      (parse-uri thing))))
-    
+(fmakunbound 'uri)
+(fmakunbound 'uri-p)
+
+(defvar *class.uri* 'uri
+  "Binds the concrete class designator to use when instantiating
+ these, but specification is initargs only.
+ this must be a symbol as it may be used as the constructor
+ function designator")
+
+(defgeneric uri (designator &rest args)
+  (declare (dynamic-extent args))
+  (:documentation "Construct a uri given initialization arguments. the
+ first argument may be a keyword, in which case the value of *class.uri* designate the
+ class, or it may be a class designator. In other cases, the first argument
+ is interpreted as a context to dereference the respective uri.")
+  (:method ((thing string) &key &allow-other-keys) (parse-uri thing))
+  (:method ((class-designator (eql t)) &rest initargs)
+    (apply 'uri *class.uri* initargs))
+  (:method ((instance uri) &key &allow-other-keys)
+    instance)
+  (:method ((initargs common-lisp:list) &rest args)
+    "given a list, spread it and recurse."
+    (apply 'uri (first initargs) (nconc args (rest initargs))))
+  (:method ((keyword symbol) &rest rest-initargs)
+    (if (keywordp keyword)
+      (apply #'make-instance *class.uri* keyword rest-initargs)
+      (uri (apply #'make-instance keyword rest-initargs)))))
+
+(defun make-uri (&rest initargs)
+  (declare (dynamic-extent initargs))
+  (apply #'uri *class.uri* initargs))
+
+(defgeneric uri-p (object)
+  (:method ((object t)) nil)
+  (:method ((object uri)) t))
 
 ;;;
 ;;; augment initialization
