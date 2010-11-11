@@ -910,6 +910,8 @@ URI ~s contains illegal character ~s at position ~d."
       ((= i max)
        (shrink-vector new-string (incf new-i)))
     (setq ci (char-int (setq c (char string i))))
+    ;; this encodes only the escapes in the 0 - 255 region. if other characters
+    ;; are present, treat it as an iri - don't url-elcode them.
     (if* (or (null reserved-chars)
              (> ci 127)
              (= 0 (sbit reserved-chars ci)))
