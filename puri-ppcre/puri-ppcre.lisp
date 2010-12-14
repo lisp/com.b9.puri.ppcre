@@ -60,6 +60,7 @@
 (fmakunbound 'uri)
 (fmakunbound 'uri-p)
 (fmakunbound 'merge-uris)
+(fmakunbound 'render-uri)
 
 (defparameter *standard-ports*
   '((:amqp . 5672)
@@ -594,3 +595,51 @@
 ;;;; step 7
    :done
     (return-from merge-uris uri)))
+
+
+;;; printing
+
+(defun render-uri (uri stream
+                   &aux (escape (uri-escaped uri))
+                        (*print-pretty* nil))
+  (unless (eq escape (uri-escaped uri))
+    (warn "incompatible uri escape: ~s ~s" escape (uri-escaped uri)))
+  (if* stream
+     then (format stream "~a" (uri-string uri))
+     else (uri-string uri)))
+
+(defmethod uri-string :before ((uri uri))
+  (with-slots (string (escape escaped)) uri
+    (when (null string)
+      (setf string
+            (let ((scheme (uri-scheme uri))
+                  (host (uri-host uri))
+                  (port (uri-port uri))
+                  (path (uri-path uri))
+                  (query (uri-query uri))
+                  (fragment (uri-fragment uri)))
+              (concatenate 'string
+                           (when scheme
+                             (encode-escaped-encoding
+                              (string-downcase ;; for upper case lisps
+                               (symbol-name scheme))
+                              *reserved-characters* escape))
+                           (when scheme ":")
+                           (when (or host (eq :file scheme)) "//")
+                           (when host
+                             (encode-escaped-encoding
+                              host *reserved-authority-characters* escape))
+                           (when port ":")
+                           (when port
+                             #-allegro (format nil "~D" port)
+                             #+allegro (with-output-to-string (s)
+                                         (excl::maybe-print-fast s port))
+                             )
+                           (encode-escaped-encoding (or path "/")
+                                                    nil
+                                                    ;;*reserved-path-characters*
+                                                    escape)
+                           (when query "?")
+                           (when query (encode-escaped-encoding query nil escape))
+                           (when fragment "#")
+                           (when fragment (encode-escaped-encoding fragment nil escape))))))))
