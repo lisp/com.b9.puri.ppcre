@@ -149,6 +149,7 @@
     
 
 (defparameter *parse-uri-string* 'parse-uri-string)
+(defparameter *escape-uri-string* t)
 
 (defgeneric parse-uri (designator &key class package parse-uri-string)
   (:documentation "Coerce the designator to an URI.
@@ -156,21 +157,22 @@
  designator : (or string uri) : an URI is returned, a string is parsed
  value : uri")
 
-  (:method ((uri uri) &key class package parse-uri-string)
-    (declare (ignore class package parse-uri-string))
+  (:method ((uri uri) &key class package parse-uri-string escape)
+    (declare (ignore class package parse-uri-string escape))
     uri)
 
   (:method (thing &key (class 'uri) (package *package*) (parse-uri-string *parse-uri-string*)
-                  &aux escape)
+                  (escape (and *escape-uri-string* (escape-p thing))))
     (when (uri-p thing) (return-from parse-uri thing))
     
-    (setq escape (escape-p thing))
     (multiple-value-bind (scheme host port path query fragment userinfo)
                          (funcall parse-uri-string thing)
       (when scheme
         (setq scheme
               (intern (funcall
                        (case *current-case-mode*
+                         (:preserve
+                          #'identity)
                          ((:case-insensitive-upper :case-sensitive-upper)
                           #'string-upcase)
                          ((:case-insensitive-lower :case-sensitive-lower)
@@ -621,8 +623,9 @@
               (concatenate 'string
                            (when scheme
                              (encode-escaped-encoding
-                              (string-downcase ;; for upper case lisps
-                               (symbol-name scheme))
+                              ;; for upper case lisps  ; why ever do this
+                              #+(or ) (string-downcase (symbol-name scheme))
+                              (symbol-name scheme)
                               *reserved-characters* escape))
                            (when scheme ":")
                            (when (or host (eq :file scheme)) "//")
