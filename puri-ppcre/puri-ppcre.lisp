@@ -163,8 +163,6 @@
 
   (:method (thing &key (class 'uri) (package *package*) (parse-uri-string *parse-uri-string*)
                   (escape (and *escape-uri-string* (escape-p thing))))
-    (when (uri-p thing) (return-from parse-uri thing))
-    
     (multiple-value-bind (scheme host port path query fragment userinfo)
                          (funcall parse-uri-string thing)
       (when scheme
@@ -252,7 +250,7 @@
                     :fragment fragment
                     :escaped escape
                     :userinfo userinfo))))
-                
+        (setf (uri-string uri) thing)
         uri))))
 
 
@@ -612,6 +610,8 @@
 
 (defmethod uri-string :before ((uri uri))
   (with-slots (string (escape escaped)) uri
+    ;; if the cached string has been erased, generate a new one.
+    ;; nb. any canonicalization will render this different than the original
     (when (null string)
       (setf string
             (let ((scheme (uri-scheme uri))
@@ -623,9 +623,8 @@
               (concatenate 'string
                            (when scheme
                              (encode-escaped-encoding
-                              ;; for upper case lisps  ; why ever do this
-                              #+(or ) (string-downcase (symbol-name scheme))
-                              (symbol-name scheme)
+                              ;; for upper case lisps - so long as parsing maps to a symbol
+                              (string-downcase (symbol-name scheme))
                               *reserved-characters* escape))
                            (when scheme ":")
                            (when (or host (eq :file scheme)) "//")
