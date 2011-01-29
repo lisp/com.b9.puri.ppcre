@@ -411,8 +411,10 @@
                  (when (plusp (length s))
                    (validate (query s i c) (qchar-p s i c))))
                (fragment (s)
-                 (when (plusp (length s))
-                   (validate (fragment s i c) (fchar-p s i c))))
+                 (when s
+                   (if (plusp (length s))
+                     (validate (fragment s i c) (fchar-p s i c))
+                     s)))
                (pct-encoded-p (s i c)
                  (and (>= (length s) (+ i 3))
                       (eql c #\%)
