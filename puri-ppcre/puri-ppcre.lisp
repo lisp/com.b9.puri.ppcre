@@ -82,7 +82,6 @@
  function designator")
 
 (defgeneric uri (designator &rest args)
-  (declare (dynamic-extent args))
   (:documentation "Construct a uri given initialization arguments. the
  first argument may be a keyword, in which case the value of *class.uri* designate the
  class, or it may be a class designator. In other cases, the first argument
