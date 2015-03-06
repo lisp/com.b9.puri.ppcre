@@ -1175,8 +1175,8 @@ Executes the forms once for each uri with var bound to the current uri"
           stream
           "#u takes a string or list argument: ~s" arg)))))
 
-
-(set-dispatch-macro-character #\# #\u #'puri::sharp-u)
+(defun setup-sharp-u-reader (&optional (readtable *readtable*))
+  (set-dispatch-macro-character #\# #\u #'puri::sharp-u readtable))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
