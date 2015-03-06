@@ -1176,6 +1176,7 @@ Executes the forms once for each uri with var bound to the current uri"
           "#u takes a string or list argument: ~s" arg)))))
 
 
+(setq *readtable* (copy-readtable))
 (set-dispatch-macro-character #\# #\u #'puri::sharp-u)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
