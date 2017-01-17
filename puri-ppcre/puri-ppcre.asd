@@ -5,7 +5,7 @@
 (asdf:defsystem :puri-ppcre
   :name "com.b9.puri.ppcre"
   :maintainer "james.anderson@setf.de"
-  :licence "GNU Lesser General Public License"
+  :licence "Lisp Lesser GNU General Public License"
   :description "additions to the Portable Universal Resource Indentifier Library"
   :depends-on (:cl-ppcre :puri)
   :components ((:file "puri-ppcre"))
